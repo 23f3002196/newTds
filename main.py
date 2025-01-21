@@ -1,31 +1,21 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import json
 
-app = FastAPI()
+app = Flask(__name__)
+CORS(app)  # Enable CORS for all origins
 
-# Enable CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Load student marks from the JSON file
+with open("q-vercel-python.json", "r") as f:
+    data = json.load(f)
 
-class Name(BaseModel):
-    name: str
+@app.route("/api", methods=["GET"])
+def get_marks():
+    # Get the list of names from the query parameters
+    names = request.args.getlist("name")
+    # Retrieve marks for the given names
+    marks = [data["students"].get(name, None) for name in names]
+    return jsonify({"marks": marks})  # Return marks in JSON format
 
-# Sample data for demonstration
-marks_data = {
-    "X": 10,
-    "Y": 20,
-    "Z": 30
-}
-
-@app.get("/api")
-def get_marks(names: List[str]):
-    marks = [marks_data.get(name, 0) for name in names]
-    return {"marks": marks}
-
+if __name__ == "__main__":
+    app.run()
