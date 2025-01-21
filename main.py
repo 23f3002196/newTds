@@ -13,9 +13,15 @@ with open("q-vercel-python.json", "r") as f:
 def get_marks():
     # Get the list of names from the query parameters
     names = request.args.getlist("name")
-    # Retrieve marks for the given names
-    marks = [data["students"].get(name, None) for name in names]
+    
+    # Find the marks for the requested names
+    marks = []
+    for name in names:
+        # Find student by name in the list of dictionaries
+        student = next((student for student in data if student["name"] == name), None)
+        marks.append(student["marks"] if student else None)  # Append marks or None if not found
+
     return jsonify({"marks": marks})  # Return marks in JSON format
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
